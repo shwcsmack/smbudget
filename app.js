@@ -9,6 +9,7 @@ const figlet      = require('figlet');
 const {PLAID_CONFIG, PLAID_URI} = require('./config/plaid');
 const inquirer = require('./lib/inquirer');
 const {mongoose} = require('./db/mongoose');
+var {User} = require("./models/user");
 
 const port = process.env.PORT;
 
@@ -19,44 +20,28 @@ console.log(
   )
 );
 
-var userSchema = mongoose.Schema({
-  email: String,
-  user: String,
-  pass: String
-});
-
-var User = mongoose.model('User', userSchema);
-
-var testUser = new User({
-  email: "test@test.com",
-  user: "test",
-  pass: "pass"
-});
-
-// testUser.save((err, doc) => {
-//   if (err) {
-//     console.log(err);
-//   } else {
-//     console.log(doc);
-//   }
-// });
-
 const run = async () => {
   var loggedIn = false;
 
   const credentials = await inquirer.askCredentials();
 
-  User.findOne({user: credentials.username}).then((doc) => {
+  const user = await User.findOne({user: credentials.username}).then((doc) => {
     if (doc && doc.pass === credentials.password) {
-      console.log(doc);
+      return doc;
     } else {
-      console.log("User or pass not valid");
+      throw new Error("User or pass not valid");
     }
   }).catch((e) => {
-    console.log(e);
-  })
+    throw e;
+  });
 
-  console.log(credentials);
+  console.log(`Hello ${user.user}`);
+  const action = await inquirer.userActionsMenu();
 };
 
-run();
+try {
+  run();
+} catch (error) {
+  console.log(error);
+}
+
