@@ -45,3 +45,5 @@ try {
   console.log(error);
 }
 
+//users have items and items have accounts
+//to add an account get a public token and then exchange for access token to access accounts
